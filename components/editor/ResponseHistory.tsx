@@ -1,8 +1,8 @@
 // components/editor/ResponseHistory.tsx
 import React, { useState } from "react";
 import { ChevronDown, ChevronUp, Copy, Trash2, RefreshCw } from "lucide-react";
-import { Toast } from "../ui/Toast";
 import { Button } from "../ui/button";
+import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,12 +31,23 @@ export const ResponseHistory: React.FC<ResponseHistoryProps> = ({
   onReset,
 }) => {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
-  const [showToast, setShowToast] = useState(false);
+  const { toast } = useToast();
 
   const handleCopy = async (text: string) => {
-    await navigator.clipboard.writeText(text);
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: "Copied",
+        description: "Content copied to clipboard",
+        variant: "default",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to copy content",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -148,10 +159,6 @@ export const ResponseHistory: React.FC<ResponseHistoryProps> = ({
           ))}
         </div>
       </div>
-
-      {showToast && (
-        <Toast message="Content copied to clipboard!" type="success" />
-      )}
     </div>
   );
 };

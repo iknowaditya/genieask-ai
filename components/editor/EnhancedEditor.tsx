@@ -10,9 +10,9 @@ import { SettingsPanel } from "./SettingsPanel";
 import { ResponseHistory } from "./ResponseHistory";
 import { models, presets, themeColors } from "./editorConfig";
 import { EditorSkeleton } from "./EditorSkeleton";
-import { Toast } from "@/components/ui/Toast";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
+import { useToast } from "@/hooks/use-toast";
 
 export const EnhancedEditor = () => {
   const [text, setText] = useState("");
@@ -24,11 +24,10 @@ export const EnhancedEditor = () => {
   const [temperature, setTemperature] = useState(0.7);
   const [autoSave, setAutoSave] = useState(false);
   const [aiResponses, setAiResponses] = useState<string[]>([]);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
 
   const router = useRouter();
   const { data: session, status } = useSession();
+  const { toast } = useToast();
   const activeTheme = themeColors[theme];
 
   useEffect(() => {
@@ -41,16 +40,18 @@ export const EnhancedEditor = () => {
     try {
       await signOut({ redirect: false });
       router.push("/auth");
-      showNotification("Successfully signed out");
+      toast({
+        title: "Success",
+        description: "Successfully signed out",
+        variant: "default",
+      });
     } catch (error) {
-      showNotification("Error signing out" + error);
+      toast({
+        title: "Error",
+        description: `Error signing out: ${error}`,
+        variant: "destructive",
+      });
     }
-  };
-
-  const showNotification = (message: string) => {
-    setToastMessage(message);
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
   };
 
   // Auto-save effect
@@ -65,9 +66,21 @@ export const EnhancedEditor = () => {
         userId: session.user.id,
       };
       localStorage.setItem("magicSpellData", JSON.stringify(savedData));
-      showNotification("Content auto-saved");
+      toast({
+        title: "Saved",
+        description: "Content auto-saved",
+        variant: "default",
+      });
     }
-  }, [text, autoSave, selectedModel, activePreset, aiResponses, session]);
+  }, [
+    text,
+    autoSave,
+    selectedModel,
+    activePreset,
+    aiResponses,
+    session,
+    toast,
+  ]);
 
   // Load saved data effect
   useEffect(() => {
@@ -87,7 +100,11 @@ export const EnhancedEditor = () => {
 
   const handleDeleteResponse = (index: number) => {
     setAiResponses((prev) => prev.filter((_, i) => i !== index));
-    showNotification("Response deleted");
+    toast({
+      title: "Deleted",
+      description: "Response deleted",
+      variant: "default",
+    });
   };
 
   const handleResetAll = () => {
@@ -96,7 +113,11 @@ export const EnhancedEditor = () => {
     setError(null);
     setActivePreset("creative");
     setTemperature(0.7);
-    showNotification("All content has been reset");
+    toast({
+      title: "Reset",
+      description: "All content has been reset",
+      variant: "default",
+    });
   };
 
   const handleShare = async (type: "copy" | "pdf" | "twitter") => {
@@ -105,7 +126,11 @@ export const EnhancedEditor = () => {
     switch (type) {
       case "copy":
         await navigator.clipboard.writeText(content);
-        showNotification("Content copied to clipboard");
+        toast({
+          title: "Copied",
+          description: "Content copied to clipboard",
+          variant: "default",
+        });
         break;
       case "pdf":
         const printWindow = window.open("", "", "width=800,height=600");
@@ -163,7 +188,11 @@ export const EnhancedEditor = () => {
 
   const generateText = async () => {
     if (!session?.user) {
-      showNotification("Please sign in to generate text");
+      toast({
+        title: "Error",
+        description: "Please sign in to generate text",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -197,7 +226,11 @@ export const EnhancedEditor = () => {
         setText((prevText) =>
           prevText ? `${prevText}\n\n${newResponse}` : newResponse
         );
-        showNotification("New content generated successfully");
+        toast({
+          title: "Success",
+          description: "New content generated successfully",
+          variant: "default",
+        });
       } else {
         throw new Error("Unexpected response format");
       }
@@ -208,6 +241,12 @@ export const EnhancedEditor = () => {
       } else {
         setError("Failed to generate text. Please try again.");
       }
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
+      });
     } finally {
       setIsGenerating(false);
     }
@@ -294,9 +333,6 @@ export const EnhancedEditor = () => {
             onReset={handleResetAll}
           />
         )}
-
-        {/* Toast Notification */}
-        {showToast && <Toast message={toastMessage} type="success" />}
       </div>
     </div>
   );

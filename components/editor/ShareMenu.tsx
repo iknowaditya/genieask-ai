@@ -13,16 +13,10 @@ import {
 import { Toast } from "../ui/Toast";
 
 interface ShareMenuProps {
-  text: string;
-  aiResponses: string[];
   onShare: (type: "copy" | "pdf" | "twitter") => Promise<void>;
 }
 
-export const ShareMenu: React.FC<ShareMenuProps> = ({
-  text,
-  aiResponses,
-  onShare,
-}) => {
+export const ShareMenu: React.FC<ShareMenuProps> = ({ onShare }) => {
   const [showToast, setShowToast] = useState(false);
 
   const handleShare = async (type: "copy" | "pdf" | "twitter") => {

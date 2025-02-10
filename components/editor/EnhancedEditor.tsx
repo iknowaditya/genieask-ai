@@ -43,7 +43,7 @@ export const EnhancedEditor = () => {
       router.push("/auth");
       showNotification("Successfully signed out");
     } catch (error) {
-      showNotification("Error signing out");
+      showNotification("Error signing out" + error);
     }
   };
 
@@ -201,9 +201,13 @@ export const EnhancedEditor = () => {
       } else {
         throw new Error("Unexpected response format");
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Generation error:", error);
-      setError(error.message || "Failed to generate text. Please try again.");
+      if (error instanceof Error) {
+        setError(error.message || "Failed to generate text. Please try again.");
+      } else {
+        setError("Failed to generate text. Please try again.");
+      }
     } finally {
       setIsGenerating(false);
     }

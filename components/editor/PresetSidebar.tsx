@@ -1,4 +1,3 @@
-// components/editor/PresetSidebar.tsx
 import React from "react";
 import { Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";

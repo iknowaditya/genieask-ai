@@ -48,7 +48,7 @@ export const EnhancedEditor = () => {
         duration: 3000,
       });
     } catch (error) {
-      toast.error("Error signing out", {
+      toast.error("Error signing out" + error, {
         icon: "❌",
       });
     }
@@ -86,7 +86,9 @@ export const EnhancedEditor = () => {
             setActivePreset(parsed.preset);
           }
         } catch (error) {
-          toast.error("Error loading saved data");
+          toast.error("Error loading saved data" + error, {
+            icon: "❌",
+          });
         }
       }
     }
@@ -123,7 +125,9 @@ export const EnhancedEditor = () => {
             icon: "📋",
           });
         } catch (error) {
-          toast.error("Failed to copy content");
+          toast.error("Failed to copy content" + error, {
+            icon: "❌",
+          });
         }
         break;
       case "pdf":
@@ -174,7 +178,9 @@ export const EnhancedEditor = () => {
             });
           }
         } catch (error) {
-          toast.error("Failed to generate PDF");
+          toast.error("Failed to generate PDF" + error, {
+            icon: "❌",
+          });
         }
         break;
       case "twitter":
@@ -188,7 +194,9 @@ export const EnhancedEditor = () => {
             icon: "🐦",
           });
         } catch (error) {
-          toast.error("Failed to share on Twitter");
+          toast.error("Failed to share on Twitter" + error, {
+            icon: "❌",
+          });
         }
         break;
     }

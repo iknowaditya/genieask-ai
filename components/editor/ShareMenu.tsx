@@ -67,7 +67,7 @@ export const ShareMenu: React.FC<ShareMenuProps> = ({
         },
         toastStyle
       );
-    } catch (error) {
+    } catch {
       toast.error(`Failed to ${type} content`, toastStyle);
     }
   };

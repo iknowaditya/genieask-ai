@@ -47,7 +47,7 @@ export const ResponseHistory: React.FC<ResponseHistoryProps> = ({
         },
       });
     } catch (error) {
-      toast.error("Failed to copy content", {
+      toast.error("Failed to copy content" + error, {
         icon: "❌",
         style: {
           background: theme === "dark" ? "#1F2937" : "#FFFFFF",

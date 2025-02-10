@@ -1,8 +1,5 @@
 # 🧙‍♂️ GenieAsk - AI-Powered Text Generation Platform
 
-<p align="center">
- <img src="public/preview.png" alt="GenieAsk Preview" width="600"/>
-</p>
 
 ## 🌟 Overview 
 

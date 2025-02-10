@@ -1,4 +1,3 @@
-// components/editor/EditorSkeleton.tsx
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const EditorSkeleton = () => {

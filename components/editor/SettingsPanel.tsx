@@ -1,4 +1,3 @@
-// components/editor/SettingsPanel.tsx
 import React from "react";
 import { Settings, Save } from "lucide-react";
 import { Slider } from "@/components/ui/slider";

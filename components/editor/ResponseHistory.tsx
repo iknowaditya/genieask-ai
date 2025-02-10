@@ -1,8 +1,7 @@
-// components/editor/ResponseHistory.tsx
 import React, { useState } from "react";
 import { ChevronDown, ChevronUp, Copy, Trash2, RefreshCw } from "lucide-react";
 import { Button } from "../ui/button";
-import { useToast } from "@/hooks/use-toast";
+import toast from "react-hot-toast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,23 +30,72 @@ export const ResponseHistory: React.FC<ResponseHistoryProps> = ({
   onReset,
 }) => {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
-  const { toast } = useToast();
 
   const handleCopy = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast({
-        title: "Copied",
-        description: "Content copied to clipboard",
-        variant: "default",
+      toast.success("Content copied to clipboard", {
+        icon: "📋",
+        style: {
+          background: theme === "dark" ? "#1F2937" : "#FFFFFF",
+          color: theme === "dark" ? "#FFFFFF" : "#1F2937",
+          border: "1px solid",
+          borderColor:
+            theme === "dark"
+              ? "rgba(75, 85, 99, 0.3)"
+              : "rgba(229, 231, 235, 0.3)",
+        },
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to copy content",
-        variant: "destructive",
+      toast.error("Failed to copy content", {
+        icon: "❌",
+        style: {
+          background: theme === "dark" ? "#1F2937" : "#FFFFFF",
+          color: theme === "dark" ? "#FFFFFF" : "#1F2937",
+        },
       });
     }
+  };
+
+  const handleDelete = (index: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    toast.promise(
+      new Promise((resolve) => {
+        onDelete(index);
+        setTimeout(resolve, 300);
+      }),
+      {
+        loading: "Deleting...",
+        success: "Response deleted! 🗑️",
+        error: "Failed to delete",
+      },
+      {
+        style: {
+          background: theme === "dark" ? "#1F2937" : "#FFFFFF",
+          color: theme === "dark" ? "#FFFFFF" : "#1F2937",
+        },
+      }
+    );
+  };
+
+  const handleReset = () => {
+    toast.promise(
+      new Promise((resolve) => {
+        onReset();
+        setTimeout(resolve, 300);
+      }),
+      {
+        loading: "Resetting...",
+        success: "All responses cleared! 🔄",
+        error: "Failed to reset",
+      },
+      {
+        style: {
+          background: theme === "dark" ? "#1F2937" : "#FFFFFF",
+          color: theme === "dark" ? "#FFFFFF" : "#1F2937",
+        },
+      }
+    );
   };
 
   return (
@@ -60,7 +108,6 @@ export const ResponseHistory: React.FC<ResponseHistoryProps> = ({
             Generated Responses
           </h3>
 
-          {/* Reset Button with Alert Dialog */}
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button
@@ -72,19 +119,37 @@ export const ResponseHistory: React.FC<ResponseHistoryProps> = ({
                 Reset All
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
+            <AlertDialogContent
+              className={
+                theme === "dark" ? "bg-gray-800 text-white border-gray-700" : ""
+              }
+            >
               <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                <AlertDialogDescription>
+                <AlertDialogTitle
+                  className={theme === "dark" ? "text-white" : ""}
+                >
+                  Are you sure?
+                </AlertDialogTitle>
+                <AlertDialogDescription
+                  className={theme === "dark" ? "text-gray-300" : ""}
+                >
                   This will delete all generated responses. This action cannot
                   be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel
+                  className={
+                    theme === "dark"
+                      ? "bg-gray-700 text-white hover:bg-gray-600"
+                      : ""
+                  }
+                >
+                  Cancel
+                </AlertDialogCancel>
                 <AlertDialogAction
-                  onClick={onReset}
-                  className="bg-red-500 hover:bg-red-600"
+                  onClick={handleReset}
+                  className="bg-red-500 hover:bg-red-600 text-white"
                 >
                   Reset
                 </AlertDialogAction>
@@ -99,9 +164,8 @@ export const ResponseHistory: React.FC<ResponseHistoryProps> = ({
               key={index}
               className={`${
                 theme === "dark" ? "bg-gray-800/50" : "bg-gray-50"
-              } rounded-lg transition-all duration-300`}
+              } rounded-lg transition-all duration-300 hover:shadow-lg`}
             >
-              {/* Preview Card */}
               <div
                 className={`p-4 cursor-pointer flex items-center justify-between ${
                   expandedIndex === index ? "border-b border-gray-700/50" : ""
@@ -122,17 +186,15 @@ export const ResponseHistory: React.FC<ResponseHistoryProps> = ({
                       handleCopy(response);
                     }}
                     className="p-2 hover:bg-violet-500/10 hover:text-violet-500 rounded-lg transition-colors"
+                    title="Copy response"
                   >
                     <Copy className="w-4 h-4" />
                   </button>
 
-                  {/* Delete Button */}
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDelete(index);
-                    }}
+                    onClick={(e) => handleDelete(index, e)}
                     className="p-2 hover:bg-red-500/10 hover:text-red-500 rounded-lg transition-colors"
+                    title="Delete response"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -145,11 +207,10 @@ export const ResponseHistory: React.FC<ResponseHistoryProps> = ({
                 </div>
               </div>
 
-              {/* Expanded Content */}
               {expandedIndex === index && (
-                <div className="p-4 ai-response">
+                <div className="p-4 ai-response animate-fadeIn">
                   <p
-                    className={`${activeTheme.text} whitespace-pre-wrap font-['JetBrains_Mono']`}
+                    className={`${activeTheme.text} whitespace-pre-wrap font-['JetBrains_Mono'] leading-relaxed`}
                   >
                     {response}
                   </p>

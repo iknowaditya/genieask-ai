@@ -1,4 +1,3 @@
-// components/editor/TextEditor.tsx
 import React from "react";
 import { Wand2, CircleX } from "lucide-react";
 import { Button } from "@/components/ui/button";

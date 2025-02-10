@@ -12,9 +12,10 @@ import { models, presets, themeColors } from "./editorConfig";
 import { EditorSkeleton } from "./EditorSkeleton";
 import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { useToast } from "@/hooks/use-toast";
+import toast, { Toaster } from "react-hot-toast";
 
 export const EnhancedEditor = () => {
+  // State declarations
   const [text, setText] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedModel, setSelectedModel] = useState("groq");
@@ -25,31 +26,30 @@ export const EnhancedEditor = () => {
   const [autoSave, setAutoSave] = useState(false);
   const [aiResponses, setAiResponses] = useState<string[]>([]);
 
+  // Hooks
   const router = useRouter();
   const { data: session, status } = useSession();
-  const { toast } = useToast();
   const activeTheme = themeColors[theme];
 
+  // Auth check effect
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth");
     }
   }, [status, router]);
 
+  // Sign out handler
   const handleSignOut = async () => {
     try {
       await signOut({ redirect: false });
       router.push("/auth");
-      toast({
-        title: "Success",
-        description: "Successfully signed out",
-        variant: "default",
+      toast.success("Successfully signed out", {
+        icon: "👋",
+        duration: 3000,
       });
     } catch (error) {
-      toast({
-        title: "Error",
-        description: `Error signing out: ${error}`,
-        variant: "destructive",
+      toast.error("Error signing out", {
+        icon: "❌",
       });
     }
   };
@@ -66,44 +66,37 @@ export const EnhancedEditor = () => {
         userId: session.user.id,
       };
       localStorage.setItem("magicSpellData", JSON.stringify(savedData));
-      toast({
-        title: "Saved",
-        description: "Content auto-saved",
-        variant: "default",
+      toast.success("Content auto-saved", {
+        icon: "💾",
       });
     }
-  }, [
-    text,
-    autoSave,
-    selectedModel,
-    activePreset,
-    aiResponses,
-    session,
-    toast,
-  ]);
+  }, [text, autoSave, selectedModel, activePreset, aiResponses, session]);
 
   // Load saved data effect
   useEffect(() => {
     if (session?.user) {
       const savedData = localStorage.getItem("magicSpellData");
       if (savedData) {
-        const parsed = JSON.parse(savedData);
-        if (parsed.userId === session.user.id) {
-          setText(parsed.text);
-          setAiResponses(parsed.aiResponses || []);
-          setSelectedModel(parsed.model);
-          setActivePreset(parsed.preset);
+        try {
+          const parsed = JSON.parse(savedData);
+          if (parsed.userId === session.user.id) {
+            setText(parsed.text);
+            setAiResponses(parsed.aiResponses || []);
+            setSelectedModel(parsed.model);
+            setActivePreset(parsed.preset);
+          }
+        } catch (error) {
+          toast.error("Error loading saved data");
         }
       }
     }
   }, [session]);
 
+  // Response handlers
   const handleDeleteResponse = (index: number) => {
     setAiResponses((prev) => prev.filter((_, i) => i !== index));
-    toast({
-      title: "Deleted",
-      description: "Response deleted",
-      variant: "default",
+    toast.success("Response deleted", {
+      icon: "🗑️",
     });
   };
 
@@ -113,124 +106,147 @@ export const EnhancedEditor = () => {
     setError(null);
     setActivePreset("creative");
     setTemperature(0.7);
-    toast({
-      title: "Reset",
-      description: "All content has been reset",
-      variant: "default",
+    toast.success("All content has been reset", {
+      icon: "🔄",
     });
   };
 
+  // Share handler
   const handleShare = async (type: "copy" | "pdf" | "twitter") => {
     const content = `${text}\n\n${aiResponses.join("\n\n")}`;
 
     switch (type) {
       case "copy":
-        await navigator.clipboard.writeText(content);
-        toast({
-          title: "Copied",
-          description: "Content copied to clipboard",
-          variant: "default",
-        });
+        try {
+          await navigator.clipboard.writeText(content);
+          toast.success("Content copied to clipboard", {
+            icon: "📋",
+          });
+        } catch (error) {
+          toast.error("Failed to copy content");
+        }
         break;
       case "pdf":
-        const printWindow = window.open("", "", "width=800,height=600");
-        if (printWindow) {
-          printWindow.document.write(`
-            <html>
-              <head>
-                <title>GenieAsk - Generated Content</title>
-                <style>
-                  body { 
-                    font-family: 'JetBrains Mono', monospace; 
-                    padding: 20px;
-                    line-height: 1.6;
-                  }
-                  .content {
-                    margin-bottom: 30px;
-                    white-space: pre-wrap;
-                  }
-                  .ai-response { 
-                    margin-top: 20px; 
-                    padding: 15px;
-                    background: #f5f5f5;
-                    border-radius: 8px;
-                    white-space: pre-wrap;
-                  }
-                </style>
-              </head>
-              <body>
-                <h2>Your Content</h2>
-                <div class="content">${text}</div>
-                <h2>AI Responses</h2>
-                ${aiResponses
-                  .map(
-                    (response) => `
-                  <div class="ai-response">${response}</div>
-                `
-                  )
-                  .join("")}
-              </body>
-            </html>
-          `);
-          printWindow.document.close();
-          printWindow.print();
+        try {
+          const printWindow = window.open("", "", "width=800,height=600");
+          if (printWindow) {
+            printWindow.document.write(`
+              <html>
+                <head>
+                  <title>GenieAsk - Generated Content</title>
+                  <style>
+                    body { 
+                      font-family: 'JetBrains Mono', monospace; 
+                      padding: 20px;
+                      line-height: 1.6;
+                    }
+                    .content {
+                      margin-bottom: 30px;
+                      white-space: pre-wrap;
+                    }
+                    .ai-response { 
+                      margin-top: 20px; 
+                      padding: 15px;
+                      background: #f5f5f5;
+                      border-radius: 8px;
+                      white-space: pre-wrap;
+                    }
+                  </style>
+                </head>
+                <body>
+                  <h2>Your Content</h2>
+                  <div class="content">${text}</div>
+                  <h2>AI Responses</h2>
+                  ${aiResponses
+                    .map(
+                      (response) => `
+                    <div class="ai-response">${response}</div>
+                  `
+                    )
+                    .join("")}
+                </body>
+              </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+            toast.success("PDF generated", {
+              icon: "📄",
+            });
+          }
+        } catch (error) {
+          toast.error("Failed to generate PDF");
         }
         break;
       case "twitter":
-        const tweetText = encodeURIComponent(content.slice(0, 280));
-        window.open(
-          `https://twitter.com/intent/tweet?text=${tweetText}`,
-          "_blank"
-        );
+        try {
+          const tweetText = encodeURIComponent(content.slice(0, 280));
+          window.open(
+            `https://twitter.com/intent/tweet?text=${tweetText}`,
+            "_blank"
+          );
+          toast.success("Opening Twitter...", {
+            icon: "🐦",
+          });
+        } catch (error) {
+          toast.error("Failed to share on Twitter");
+        }
         break;
     }
   };
 
+  // Text generation handler
   const generateText = async () => {
     if (!session?.user) {
-      toast({
-        title: "Error",
-        description: "Please sign in to generate text",
-        variant: "destructive",
-      });
+      toast.error("Please sign in to generate text");
       return;
     }
 
     setIsGenerating(true);
     setError(null);
-    try {
-      const response = await fetch("/api/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: selectedModel,
-          prompt:
-            text ||
-            `${presets.find((p) => p.id === activePreset)?.prompt || ""} magic`,
-          temperature: temperature,
-        }),
-      });
 
+    const generatePromise = fetch("/api/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: selectedModel,
+        prompt:
+          text ||
+          `${presets.find((p) => p.id === activePreset)?.prompt || ""} magic`,
+        temperature: temperature,
+      }),
+    });
+
+    toast.promise(
+      generatePromise,
+      {
+        loading: "Generating...",
+        success: "Content generated successfully! ✨",
+        error: "Failed to generate content 😔",
+      },
+      {
+        style: {
+          background: theme === "dark" ? "#1F2937" : "#FFFFFF",
+          color: theme === "dark" ? "#FFFFFF" : "#1F2937",
+        },
+      }
+    );
+
+    try {
+      const response = await generatePromise;
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to generate text");
       }
 
       const data = await response.json();
-
       if (data.content) {
         const newResponse = data.content;
         setAiResponses((prev) => [...prev, newResponse]);
         setText((prevText) =>
           prevText ? `${prevText}\n\n${newResponse}` : newResponse
         );
-        toast({
-          title: "Success",
-          description: "New content generated successfully",
-          variant: "default",
-        });
       } else {
         throw new Error("Unexpected response format");
       }
@@ -241,12 +257,6 @@ export const EnhancedEditor = () => {
       } else {
         setError("Failed to generate text. Please try again.");
       }
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
-      });
     } finally {
       setIsGenerating(false);
     }
@@ -260,6 +270,36 @@ export const EnhancedEditor = () => {
     <div
       className={`min-h-screen ${activeTheme.background} p-8 transition-all duration-500`}
     >
+      <Toaster
+        position="bottom-right"
+        reverseOrder={false}
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: theme === "dark" ? "#1F2937" : "#FFFFFF",
+            color: theme === "dark" ? "#FFFFFF" : "#1F2937",
+            border: "1px solid",
+            borderColor:
+              theme === "dark"
+                ? "rgba(75, 85, 99, 0.3)"
+                : "rgba(229, 231, 235, 0.3)",
+          },
+          success: {
+            duration: 3000,
+            iconTheme: {
+              primary: "#10B981",
+              secondary: "white",
+            },
+          },
+          error: {
+            duration: 4000,
+            iconTheme: {
+              primary: "#EF4444",
+              secondary: "white",
+            },
+          },
+        }}
+      />
       <div className="max-w-6xl mx-auto">
         <EditorHeader
           theme={theme}
@@ -304,7 +344,6 @@ export const EnhancedEditor = () => {
           </div>
         </div>
 
-        {/* Notifications */}
         {isGenerating && (
           <Alert className="mt-6 bg-violet-500/10 border-violet-500/20 text-violet-400 rounded-2xl">
             <AlertDescription className="flex items-center gap-2">
@@ -323,7 +362,6 @@ export const EnhancedEditor = () => {
           </Alert>
         )}
 
-        {/* Response History */}
         {aiResponses.length > 0 && (
           <ResponseHistory
             responses={aiResponses}

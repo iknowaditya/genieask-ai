@@ -1,4 +1,3 @@
-// app/layout.tsx
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth/AuthProvider";
@@ -11,7 +10,7 @@ export const metadata: Metadata = {
   description:
     "GenieAsk is an AI-powered text generation platform featuring multiple AI models, real-time generation, and smart content management.",
   icons: {
-    icon: "/logo.jpg", // Replace with the path to your icon image file
+    icon: "/logo.jpg",
   },
 };
 

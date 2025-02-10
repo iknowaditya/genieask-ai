@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Sparkles, XCircle, Loader2 } from "lucide-react";
+import { Sparkles, XCircle } from "lucide-react";
 import { EditorHeader } from "./EditorHeader";
 import { PresetSidebar } from "./PresetSidebar";
 import { TextEditor } from "./TextEditor";

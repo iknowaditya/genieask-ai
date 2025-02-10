@@ -1,4 +1,3 @@
-// components/editor/editorConfig.ts
 import { Binary, Zap, Sparkles, BookOpen, Code } from "lucide-react";
 
 export const models = [

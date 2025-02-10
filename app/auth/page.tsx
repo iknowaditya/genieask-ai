@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 
 export default function Auth() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {

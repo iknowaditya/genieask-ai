@@ -1,6 +1,5 @@
 import NextAuth, { NextAuthOptions, User, Session } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { JWT } from "next-auth/jwt";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -13,7 +12,7 @@ export const authOptions: NextAuthOptions = {
     signIn: "/auth",
   },
   callbacks: {
-    async session({ session, token, user }) {
+    async session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub as string;
         // You can add other user properties here
@@ -22,7 +21,7 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
-    async jwt({ token, user, account, profile }) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;

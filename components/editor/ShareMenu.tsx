@@ -13,6 +13,8 @@ import {
 import { Toast } from "../ui/Toast";
 
 interface ShareMenuProps {
+  text: string;
+  aiResponses: string[];
   onShare: (type: "copy" | "pdf" | "twitter") => Promise<void>;
 }
 

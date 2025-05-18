@@ -1,8 +1,18 @@
 import { NextResponse } from "next/server";
+import Groq from "groq-sdk";
+
+// ✅ Initialize SDK with your API key
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
 
 export async function POST(req: Request) {
   try {
     const { prompt } = await req.json();
+
+    if (!prompt) {
+      throw new Error("Prompt is required");
+    }
 
     if (!process.env.GROQ_API_KEY) {
       throw new Error("GROQ_API_KEY is not configured");
@@ -10,39 +20,20 @@ export async function POST(req: Request) {
 
     console.log("Sending prompt to Groq:", prompt);
 
-    const response = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
-      {
-        // Updated URL
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          model: "mixtral-8x7b-32768",
-          messages: [{ role: "user", content: prompt }],
-          temperature: 0.7,
-          max_tokens: 1000,
-        }),
-      }
-    );
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile", // ✅ New model name
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,
+      max_tokens: 1000,
+    });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Groq API error:", errorData);
-      throw new Error(`Groq API error: ${response.statusText}`);
+    const message = completion.choices[0]?.message?.content;
+
+    if (!message) {
+      throw new Error("No response from Groq model");
     }
 
-    const data = await response.json();
-    console.log("Groq API response:", data);
-
-    if (!data.choices?.[0]?.message) {
-      throw new Error("Invalid response format from Groq API");
-    }
-
-    return NextResponse.json(data.choices[0].message);
+    return NextResponse.json({ content: message });
   } catch (error) {
     console.error("Error in generate route:", error);
     const errorMessage =

@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description:
     "GenieAsk is an AI-powered text generation platform featuring multiple AI models, real-time generation, and smart content management.",
   icons: {
-    icon: "/logo.jpg",
+    icon: "/favicon.ico",
   },
 };
 
